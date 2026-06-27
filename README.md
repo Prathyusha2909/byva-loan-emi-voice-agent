@@ -1,3 +1,10 @@
+---
+title: BYVA Loan EMI Voice Agent
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # BYVA Loan EMI Reminder + Customer Support Voice Agent
 
 A polished demo for a BFSI-style voice agent: inbound support, outbound EMI reminders, function calling, RAG over policy docs, human handoff logic, transcripts, and analytics.
