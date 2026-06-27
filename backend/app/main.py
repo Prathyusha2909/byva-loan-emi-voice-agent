@@ -2,15 +2,21 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import database
 from .agent import handle_turn, start_call
 from .rag import retriever
 from .schemas import AgentTurnRequest, StartCallRequest, ToolWebhookRequest
 from .tools import call_tool
+
+
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
 @asynccontextmanager
@@ -40,7 +46,7 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_origin_regex=os.getenv(
         "ALLOWED_ORIGIN_REGEX",
-        r"https://.*\.onrender\.com|https://.*\.vercel\.app",
+        r"https://.*\.onrender\.com|https://.*\.vercel\.app|https://.*\.loca\.lt|https://.*\.hf\.space",
     ),
     allow_credentials=True,
     allow_methods=["*"],
@@ -54,7 +60,10 @@ def health() -> dict[str, str]:
 
 
 @app.get("/")
-def root() -> dict[str, str]:
+def root():
+    index_file = FRONTEND_DIST / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
     return {
         "name": "BYVA Loan EMI Voice Agent API",
         "status": "ok",
@@ -138,3 +147,17 @@ def tool_webhook(payload: ToolWebhookRequest) -> dict:
     except TypeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"call_id": call_id, "result": result}
+
+
+if FRONTEND_DIST.exists():
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
+    @app.get("/{full_path:path}")
+    def spa_fallback(full_path: str):
+        requested_path = FRONTEND_DIST / full_path
+        if requested_path.is_file():
+            return FileResponse(requested_path)
+        return FileResponse(FRONTEND_DIST / "index.html")

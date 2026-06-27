@@ -25,6 +25,17 @@ A polished demo for a BFSI-style voice agent: inbound support, outbound EMI remi
 - Voice demo: Browser Web Speech API + SpeechSynthesis
 - Optional production swap: Vapi/Retell/LiveKit + Deepgram/Whisper + GPT/Gemini/Claude + ElevenLabs/OpenAI TTS
 
+## Deploy To Hugging Face Spaces
+
+This repo includes a root `Dockerfile` for a permanent Hugging Face Spaces deployment. The Docker app builds the React frontend and serves it through FastAPI on port `7860`.
+
+1. Create a new Hugging Face Space.
+2. Choose `Docker` as the Space SDK.
+3. Push this repository to the Space repo.
+4. Open the Space URL and click `Run demo`.
+
+The deployed app uses one public URL for both frontend and backend API routes.
+
 ## Run Locally
 
 Backend:
