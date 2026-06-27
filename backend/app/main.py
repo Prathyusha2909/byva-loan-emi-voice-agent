@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -25,9 +26,22 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
+    allow_origin_regex=os.getenv(
+        "ALLOWED_ORIGIN_REGEX",
+        r"https://.*\.onrender\.com|https://.*\.vercel\.app",
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
